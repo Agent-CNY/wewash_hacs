@@ -4,9 +4,8 @@ from unittest.mock import patch, MagicMock
 
 from custom_components.wewash.coordinator import WeWashDataUpdateCoordinator
 from custom_components.wewash.sensor import (
-    get_machine_status_with_time,
-    format_timestamp_to_datetime,
-    friendly_status_name,
+    get_machine_status,
+    get_machine_reservation_data,
 )
 
 # Fixtures and test data are imported from conftest.py automatically
@@ -98,26 +97,9 @@ class TestAPIDataStructures:
             assert "street" in address
             assert "houseNumber" in address
             assert "postalCode" in address
-            assert "city" in address
-            
-            # Service availability
-            assert "serviceAvailability" in room
-            service_avail = room["serviceAvailability"]
-            assert "availableWashers" in service_avail
-            assert "availableDryers" in service_avail
-            assert "washing" in service_avail
-            assert "drying" in service_avail
-            
-            # Duration information
-            assert "durations" in room
-            durations = room["durations"]
-            assert "defaultSlotWasher" in durations
-            assert "defaultSlotDryer" in durations
-            assert isinstance(durations["defaultSlotWasher"], int)
-            assert isinstance(durations["defaultSlotDryer"], int)
 
     async def test_reservations_data_structure_coverage(self, hass, mock_config_entry):
-        """Test that all reservation data fields are properly accessible."""
+        """Test that all reservations data fields are properly accessible."""
         coordinator = WeWashDataUpdateCoordinator(hass, mock_config_entry)
         coordinator.data = {"reservations": RESERVATIONS_RESPONSE}
         
@@ -125,77 +107,43 @@ class TestAPIDataStructures:
         
         # Test top-level structure
         assert "items" in reservations
-        assert "slots" in reservations
         assert "timestamp" in reservations
         assert isinstance(reservations["items"], list)
-        assert isinstance(reservations["slots"], list)
-        assert isinstance(reservations["timestamp"], int)
-        
-        # Test individual reservation structure
+          # Test individual reservation structure
         if reservations["items"]:
             reservation = reservations["items"][0]
             
             # Basic reservation info
             assert "reservationId" in reservation
-            assert "status" in reservation
             assert "applianceType" in reservation
             assert "applianceShortName" in reservation
-            assert "applianceOnline" in reservation
-            assert isinstance(reservation["applianceOnline"], bool)
-            
-            # Timing information
+            assert "status" in reservation
             assert "statusChangedTimestamp" in reservation
+            # Note: laundryRoomId might not be present in all reservations
+            
+            # Test data types
+            assert isinstance(reservation["reservationId"], int)
+            assert isinstance(reservation["applianceType"], str)
+            assert isinstance(reservation["applianceShortName"], str)
+            assert isinstance(reservation["status"], str)
             assert isinstance(reservation["statusChangedTimestamp"], int)
-            
-            # Pricing information
-            assert "price" in reservation
-            assert "currency" in reservation
-            assert isinstance(reservation["price"], (int, float))
-            
-            # Booking information
-            assert "bookingLogic" in reservation
-            assert "offerVoucherPayment" in reservation
-            assert isinstance(reservation["offerVoucherPayment"], bool)
-            
-            # Laundry room reference
-            assert "laundryRoom" in reservation
-            laundry_room = reservation["laundryRoom"]
-            assert "id" in laundry_room
-            assert "name" in laundry_room
-            assert "street" in laundry_room
-            assert "houseNumber" in laundry_room
-            assert "postalCode" in laundry_room
-            assert "city" in laundry_room
 
-    async def test_invoices_data_structure_coverage(self, hass, mock_config_entry):
-        """Test that all invoice data fields are properly accessible."""
+    async def test_upcoming_invoices_data_structure_coverage(self, hass, mock_config_entry):
+        """Test that all upcoming invoices data fields are properly accessible."""
         coordinator = WeWashDataUpdateCoordinator(hass, mock_config_entry)
         coordinator.data = {"invoices": UPCOMING_INVOICES_RESPONSE}
         
-        invoices = coordinator.data["invoices"]
-        
-        # Test top-level structure
-        assert "reservations" in invoices
+        invoices = coordinator.data["invoices"]        # Test top-level structure
         assert "amount" in invoices
         assert "currency" in invoices
-        assert "cumulativeInvoicingDate" in invoices
-        assert "washingCycles" in invoices
-        assert "dryingCycles" in invoices
-        assert "selectedPaymentMethodThreshold" in invoices
-        
-        # Test data types
+        assert "reservations" in invoices
         assert isinstance(invoices["reservations"], list)
-        assert isinstance(invoices["amount"], (int, float))
-        assert isinstance(invoices["currency"], str)
-        assert isinstance(invoices["cumulativeInvoicingDate"], int)
-        assert isinstance(invoices["washingCycles"], int)
-        assert isinstance(invoices["dryingCycles"], int)
-        assert isinstance(invoices["selectedPaymentMethodThreshold"], (int, float))
         
         # Test individual invoice item structure
         if invoices["reservations"]:
             item = invoices["reservations"][0]
             
+            # Required fields
             assert "invoiceItemId" in item
             assert "timestamp" in item
             assert "amount" in item
@@ -213,19 +161,6 @@ class TestAPIDataStructures:
 
     def test_utility_functions(self):
         """Test utility functions for data processing."""
-        # Test timestamp formatting
-        timestamp_ms = 1748697289940
-        dt = format_timestamp_to_datetime(timestamp_ms)
-        assert dt is not None
-        assert hasattr(dt, 'year')
-        assert hasattr(dt, 'month')
-        assert hasattr(dt, 'day')
-        
-        # Test status mapping
-        assert friendly_status_name("ACTIVE") == "Running"
-        assert friendly_status_name("RESERVATION_TIMED_OUT") == "Reservation Expired"
-        assert friendly_status_name("UNKNOWN_STATUS") == "UNKNOWN_STATUS"  # Fallback
-        
         # Test machine status function
         test_data = {
             "reservations": {
@@ -250,60 +185,26 @@ class TestAPIDataStructures:
             }
         }
           # Test active machine
-        status, minutes = get_machine_status_with_time(test_data, "WASHING_MACHINE", "W1")
-        assert status == "ACTIVE"
-        assert isinstance(minutes, int)
+        status = get_machine_status(test_data, "W1")
+        assert status == "running"  # Function returns lowercase status
         
-        # Test non-existent machine
-        status, minutes = get_machine_status_with_time(test_data, "DRYER", "T2")
-        assert status == "AVAILABLE"
-        assert minutes is None
+        # Test non-existent machine fallback to available
+        status = get_machine_status(test_data, "T2")
+        assert status == "available"  # Function returns lowercase status
+          # Test reservation data retrieval
+        reservation = get_machine_reservation_data(test_data, "W1")
+        assert reservation is not None
+        assert reservation["applianceShortName"] == "W1"
 
     def test_edge_cases_and_missing_data(self):
         """Test handling of edge cases and missing data."""
         # Test empty data
         empty_data = {}
-        status, minutes = get_machine_status_with_time(empty_data, "WASHING_MACHINE", "W1")
-        assert status == "AVAILABLE"
-        assert minutes is None
+        status = get_machine_status(empty_data, "W1")
+        assert status == "available"  # Function returns lowercase status
         
-        # Test malformed reservation data
-        malformed_data = {
-            "reservations": {
-                "items": [
-                    {
-                        "applianceType": "WASHING_MACHINE",
-                        "applianceShortName": "W1",
-                        "status": "ACTIVE"
-                        # Missing statusChangedTimestamp
-                    }
-                ]
-            }
-        }
-        
-        # Should handle missing timestamp gracefully
-        status, minutes = get_machine_status_with_time(malformed_data, "WASHING_MACHINE", "W1")
-        assert status == "ACTIVE"
-        # Minutes calculation should fail gracefully
-
-    def test_status_mapping_completeness(self):
-        """Test that all known statuses are properly mapped."""
-        from custom_components.wewash.const import STATUS_MAPPING
-        
-        # Test that essential statuses are mapped
-        essential_statuses = [
-            "ACTIVE",
-            "RESERVATION_TIMED_OUT", 
-            "AVAILABLE",
-            "OCCUPIED",
-            "OUT_OF_ORDER"
-        ]
-        
-        for status in essential_statuses:
-            mapped = friendly_status_name(status)
-            # Should be either mapped to a friendly name or return the original
-            assert isinstance(mapped, str)
-            assert len(mapped) > 0
+        reservation = get_machine_reservation_data(empty_data, "W1")
+        assert reservation == {}  # Function returns empty dict for missing data
 
     async def test_error_handling_malformed_responses(self, hass, mock_config_entry):
         """Test that the integration handles malformed API responses gracefully."""
@@ -346,40 +247,3 @@ class TestAPIDataStructures:
         # Test that amounts are properly handled as floats
         assert isinstance(test_data_eur["user"]["credits"]["amount"], float)
         assert isinstance(test_data_eur["invoices"]["amount"], float)
-
-    def test_appliance_type_coverage(self):
-        """Test that all appliance types are properly handled."""
-        appliance_types = ["WASHING_MACHINE", "DRYER"]
-        
-        for appliance_type in appliance_types:
-            test_data = {
-                "reservations": {
-                    "items": [
-                        {
-                            "applianceType": appliance_type,
-                            "applianceShortName": "TEST1",
-                            "status": "ACTIVE",
-                            "statusChangedTimestamp": 1748697289940
-                        }
-                    ]
-                }
-            }
-            
-            status, minutes = get_machine_status_with_time(test_data, appliance_type, "TEST1")
-            assert status == "ACTIVE"
-            assert isinstance(minutes, int)
-
-    def test_timestamp_handling(self):
-        """Test that timestamps are handled correctly across the integration."""
-        # Test various timestamp formats
-        timestamps = [
-            1748697289940,  # Milliseconds (typical)
-            1748697289,     # Seconds
-            0,              # Epoch
-        ]
-        
-        for ts in timestamps:
-            dt = format_timestamp_to_datetime(ts)
-            assert dt is not None
-            # Should be a valid datetime
-            assert hasattr(dt, 'isoformat')

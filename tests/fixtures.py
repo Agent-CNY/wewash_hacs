@@ -64,16 +64,40 @@ RESERVATIONS_RESPONSE = [
     }
 ]
 
-UPCOMING_INVOICES_RESPONSE = [
-    {
-        "id": "inv123",
-        "amount": {
-            "amount": 15.5,
-            "currency": "EUR"
+UPCOMING_INVOICES_RESPONSE = {
+    "reservations": [
+        {
+            "invoiceItemId": 12207486,
+            "timestamp": 1746771311308,
+            "amount": 1.50,
+            "shortName": "W1",
+            "type": "WASHING_MACHINE",
+            "invoiceItemStatus": "NEW"
         },
-        "dueDate": "2025-06-30"
-    }
-]
+        {
+            "invoiceItemId": 12208363,
+            "timestamp": 1746776029556,
+            "amount": 1.50,
+            "shortName": "T1",
+            "type": "DRYER",
+            "invoiceItemStatus": "NEW"
+        },
+        {
+            "invoiceItemId": 12309512,
+            "timestamp": 1747569873941,
+            "amount": 1.50,
+            "shortName": "W1",
+            "type": "WASHING_MACHINE",
+            "invoiceItemStatus": "NEW"
+        }
+    ],
+    "amount": 10.5,
+    "currency": "EUR",
+    "cumulativeInvoicingDate": 1748736000000,
+    "washingCycles": 4,
+    "dryingCycles": 3,
+    "selectedPaymentMethodThreshold": 20.0000
+}
 
 @pytest.fixture
 def mock_config_entry():
