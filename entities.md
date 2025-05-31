@@ -57,13 +57,13 @@
 |-----------|-------------|-----------|
 | amount | Total amount of the next invoice | invoices.amount |
 | currency | Currency for the invoice | invoices.currency |
-| washing_cycles | Number of washing cycles | invoices.washingCycles |
-| drying_cycles | Number of drying cycles | invoices.dryingCycles |
-| total_reservations | Total number of reservations | Count of invoices.reservations |
-| washer_reservations | Number of washer reservations | Count of reservations with type="WASHING_MACHINE" |
-| dryer_reservations | Number of dryer reservations | Count of reservations with type="DRYER" |
-| due_date | Formatted due date for the invoice | Formatted from invoices.cumulativeInvoicingDate |
-| due_date_raw | Raw timestamp of the due date | invoices.cumulativeInvoicingDate |
-| days_until_due | Number of days until the invoice is due | Calculated from current time and due date |
 | payment_threshold | Payment threshold amount | invoices.selectedPaymentMethodThreshold |
+| usage_washing_cycles | Number of washing cycles | invoices.washingCycles |
+| usage_drying_cycles | Number of drying cycles | invoices.dryingCycles |
+| reservations_total | Total number of reservations | Count of invoices.reservations |
+| reservations_washer | Number of washer reservations | Count of reservations with type="WASHING_MACHINE" |
+| reservations_dryer | Number of dryer reservations | Count of reservations with type="DRYER" |
+| due_date | User-friendly formatted due date | Formatted from invoices.cumulativeInvoicingDate |
+| due_in_days | Number of days until the invoice is due | Calculated from current time and due date |
+| payment_status | Human-readable payment status | "Due today", "Due tomorrow", or "Due in X days" |
 | currency | Currency code | From any reservation: items[x].currency |

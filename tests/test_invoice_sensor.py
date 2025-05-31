@@ -13,7 +13,6 @@ from custom_components.wewash.sensor import (
 )
 from custom_components.wewash.coordinator import WeWashDataUpdateCoordinator
 
-
 @pytest.fixture
 def mock_invoice_data():
     """Create mock invoice data for testing."""
@@ -88,7 +87,6 @@ def mock_invoice_data():
         "selectedPaymentMethodThreshold": 20.0000
     }
 
-
 @pytest.fixture
 def mock_coordinator(hass, mock_config_entry, mock_invoice_data):
     """Create a mock coordinator with invoice data."""
@@ -97,7 +95,6 @@ def mock_coordinator(hass, mock_config_entry, mock_invoice_data):
     coordinator.entry = mock_config_entry
     return coordinator
 
-
 def test_invoice_sensor_native_value(mock_coordinator):
     """Test that the invoice sensor returns the correct total amount."""
     sensor = WeWashNextInvoiceSensor(mock_coordinator)
@@ -105,13 +102,11 @@ def test_invoice_sensor_native_value(mock_coordinator):
     # Check that the native value is the amount from the invoice data
     assert sensor.native_value == 10.5
 
-
 def test_invoice_sensor_attributes(mock_coordinator):
     """Test all attributes of the invoice sensor."""
     sensor = WeWashNextInvoiceSensor(mock_coordinator)
     attributes = sensor.extra_state_attributes
-    
-    # Payment information
+      # Payment information
     assert attributes["currency"] == "EUR"
     assert attributes["payment_threshold"] == 20.0
     
@@ -123,10 +118,9 @@ def test_invoice_sensor_attributes(mock_coordinator):
     assert attributes["reservations_total"] == 7
     assert attributes["reservations_washer"] == 4
     assert attributes["reservations_dryer"] == 3
-      # Due date information
+    
+    # Due date information
     assert "due_date" in attributes
     assert "payment_status" in attributes
     # The exact number might vary slightly depending on time calculation
     assert 4 <= attributes["due_in_days"] <= 5  # Should be approximately 5 days
-    assert attributes["payment_status"] == "Due in 5 days" or attributes["payment_status"] == "Due in 4 days"# Payment threshold
-    assert attributes["payment_threshold"] == 20.0

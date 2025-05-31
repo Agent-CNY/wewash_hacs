@@ -249,18 +249,18 @@ class WeWashLaundryRoomSensor(WeWashBaseSensor):
 
 class WeWashNextInvoiceSensor(WeWashBaseSensor):
     """Next invoice sensor entity."""
-
+    
     def __init__(self, coordinator: WeWashDataUpdateCoordinator) -> None:
         """Initialize the next invoice sensor."""
         super().__init__(coordinator, "next_invoice", "Next Invoice", ICON_INVOICE)
-
+    
     @property
     def native_value(self) -> StateType:
         """Return the total amount of the next invoice."""
         invoice_data = self.coordinator.data.get("invoices", {})
         # Use the total amount directly from the invoice data
         return invoice_data.get("amount", 0.0)
-
+    
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
@@ -268,35 +268,39 @@ class WeWashNextInvoiceSensor(WeWashBaseSensor):
         
         invoice_data = self.coordinator.data.get("invoices", {})
         if invoice_data:
-            # Basic invoice information
+            # Payment information
             attrs["currency"] = invoice_data.get("currency", "EUR")
-            attrs["washing_cycles"] = invoice_data.get("washingCycles", 0)
-            attrs["drying_cycles"] = invoice_data.get("dryingCycles", 0)
+            attrs["payment_threshold"] = invoice_data.get("selectedPaymentMethodThreshold")
             
-            # Calculate total number of reservations
+            # Usage statistics - group related attributes
+            attrs["usage_washing_cycles"] = invoice_data.get("washingCycles", 0)
+            attrs["usage_drying_cycles"] = invoice_data.get("dryingCycles", 0)
+            
+            # Reservations information - group related attributes
             reservations = invoice_data.get("reservations", [])
-            attrs["total_reservations"] = len(reservations)
+            attrs["reservations_total"] = len(reservations)
+            attrs["reservations_washer"] = sum(1 for r in reservations if r.get("type") == "WASHING_MACHINE")
+            attrs["reservations_dryer"] = sum(1 for r in reservations if r.get("type") == "DRYER")
             
-            # Count washer and dryer reservations
-            washer_reservations = sum(1 for r in reservations if r.get("type") == "WASHING_MACHINE")
-            dryer_reservations = sum(1 for r in reservations if r.get("type") == "DRYER")
-            attrs["washer_reservations"] = washer_reservations
-            attrs["dryer_reservations"] = dryer_reservations
-            
-            # Format and calculate due date information
+            # Due date information - improve formatting and clarity
             cumulative_invoicing_timestamp = invoice_data.get("cumulativeInvoicingDate")
             if cumulative_invoicing_timestamp:
-                attrs["due_date_raw"] = cumulative_invoicing_timestamp
-                attrs["due_date"] = format_timestamp(cumulative_invoicing_timestamp)
+                # Format the due date in a more user-friendly way
+                due_date = datetime.fromtimestamp(cumulative_invoicing_timestamp / 1000)
+                attrs["due_date"] = due_date.strftime("%B %d, %Y at %I:%M:%S %p")
                 
                 # Calculate the number of days until the due date
                 current_time_ms = int(time.time() * 1000)
                 days_until_due = max(0, int((cumulative_invoicing_timestamp - current_time_ms) / (1000 * 60 * 60 * 24)))
-                attrs["days_until_due"] = days_until_due
-            
-            # Add payment threshold information
-            attrs["payment_threshold"] = invoice_data.get("selectedPaymentMethodThreshold")
-        
+                attrs["due_in_days"] = days_until_due
+                
+                # For automation purposes, add human-readable status
+                if days_until_due == 0:
+                    attrs["payment_status"] = "Due today"
+                elif days_until_due == 1:
+                    attrs["payment_status"] = "Due tomorrow"
+                elif days_until_due > 1:
+                    attrs["payment_status"] = f"Due in {days_until_due} days"        
         return attrs
 
 
