@@ -7,6 +7,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .coordinator import WeWashDataUpdateCoordinator
+from .config_flow import ConfigFlow  # pylint: disable=unused-import
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
