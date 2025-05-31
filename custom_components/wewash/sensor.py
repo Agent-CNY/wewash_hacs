@@ -124,7 +124,7 @@ async def async_setup_entry(
             elif data["reservations"]["items"]:
                 return data["reservations"]["items"][0]["status"]
         return "NO_RESERVATION"
-        
+         
     def get_reservation_machine(data: dict[str, Any], reservation_id: str | None = None) -> str:
         """Get current reservation machine info."""
         if "items" in data.get("reservations", {}):
