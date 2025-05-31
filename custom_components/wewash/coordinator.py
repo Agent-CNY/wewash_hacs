@@ -1,6 +1,7 @@
 """Data update coordinator for We-Wash."""
 from datetime import timedelta
 import logging
+import asyncio
 import aiohttp
 import async_timeout
 
@@ -16,6 +17,7 @@ from .const import (
     USER_URL,
     LAUNDRY_ROOMS_URL,
     RESERVATIONS_URL,
+    INVOICE_URL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,6 +62,10 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
                     # Fetch reservations
                     async with session.get(RESERVATIONS_URL, headers=headers) as resp:
                         data["reservations"] = await resp.json()
+
+                    # Fetch upcoming invoices
+                    async with session.get(INVOICE_URL, headers=headers) as resp:
+                        data["invoices"] = await resp.json()
 
                 return data
 
