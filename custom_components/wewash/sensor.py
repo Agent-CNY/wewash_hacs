@@ -113,7 +113,8 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             self._attr_unique_id += f"_{laundry_room_id}"
         if machine_type and machine_shortname:
             self._attr_unique_id += f"_{machine_type}_{machine_shortname}"
-              # Set translation key if provided
+            
+        # Set translation key if provided
         if description.translation_key:
             self._attr_translation_key = description.translation_key
 
@@ -157,8 +158,9 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
                 # Always ensure we have at least a second parameter for functions that expect it
                 params.append(None)
                 
-            return self.entity_description.attr_fn(*params)
-        return None
+            result = self.entity_description.attr_fn(*params)
+            return result if isinstance(result, dict) else {}
+        return {}
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -298,7 +300,7 @@ async def async_setup_entry(
                 name="Washing Cycles This Month",
                 native_unit_of_measurement="cycles",
                 icon=ICON_CYCLE_COUNT,
-                value_fn=lambda data: data.get("invoices", {}).get("washingCycles", 0),
+                value_fn=lambda data, _=None: data.get("invoices", {}).get("washingCycles", 0),
             ),
         ),
         WeWashSensor(
@@ -308,7 +310,7 @@ async def async_setup_entry(
                 name="Drying Cycles This Month",
                 native_unit_of_measurement="cycles",
                 icon=ICON_CYCLE_COUNT,
-                value_fn=lambda data: data.get("invoices", {}).get("dryingCycles", 0),
+                value_fn=lambda data, _=None: data.get("invoices", {}).get("dryingCycles", 0),
             ),
         ),
         WeWashSensor(
@@ -317,8 +319,7 @@ async def async_setup_entry(
                 key="invoice_due",
                 name="Days Until Invoice",
                 native_unit_of_measurement="days",
-                icon=ICON_TIMER,
-                value_fn=lambda data: max(0, int(
+                icon=ICON_TIMER,                value_fn=lambda data, _=None: max(0, int(
                     (datetime.fromtimestamp(data.get("invoices", {}).get(
                         "cumulativeInvoicingDate", time.time() * 1000) / 1000) - 
                      datetime.now()).days
