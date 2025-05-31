@@ -26,7 +26,23 @@ ICON_INVOICE = "mdi:invoice"
 ICON_COST = "mdi:currency-eur"
 ICON_TIMER = "mdi:timer"
 ICON_MACHINE = "mdi:washing-machine"
+ICON_LAUNDRY_ROOM = "mdi:home-assistant"
+ICON_CYCLE_COUNT = "mdi:counter"
 
 # Default device info
 MANUFACTURER = "We-Wash"
 MODEL = "Laundry System"
+
+# Sensor Names
+SENSOR_LAUNDRY_ROOM = "Laundry Room"
+SENSOR_INVOICE = "Upcoming Invoice"
+SENSOR_WASHING_MACHINE = "Washing Machine"
+SENSOR_DRYER = "Dryer"
+
+# Status Mapping
+STATUS_MAPPING = {
+    "ACTIVE": "Running",
+    "RESERVATION_TIMED_OUT": "Reservation Expired",
+    "AVAILABLE": "Available",
+    "RESERVED": "Reserved"
+}

@@ -9,6 +9,10 @@ This is a Home Assistant custom component for We-Wash laundry systems. It allows
 - Monitor available washers and dryers in your laundry rooms
 - Track your We-Wash account balance
 - Get notifications when your reserved machines are ready
+- View upcoming invoice amounts and due dates
+- Track washing and drying cycle counts
+- Enhanced machine status display with running time
+- Comprehensive laundry room information
 - Automatic updates every 5 minutes
 
 ## Installation
@@ -35,12 +39,31 @@ You'll need your We-Wash account credentials:
 ## Entities Created
 
 ### Sensors
+
+#### Balance and Invoicing
 - Account balance (EUR)
+- Upcoming invoice amount (EUR)
+- Days until invoice due
+- Washing cycles this month
+- Drying cycles this month
+
+#### Laundry Room Information
+- Laundry room status (shows available machines)
 - Available washers per laundry room
 - Available dryers per laundry room
+- Washing and drying costs per laundry room
+
+#### Machine Status (Enhanced)
+- Washing machine status with running time
+- Dryer status with running time
+- Machine online status and pricing
 
 ### Binary Sensors
 - Reservation status (indicates when your reserved machine is ready)
+
+## Dashboard
+
+A sample Lovelace dashboard configuration is provided in the [wewash_lovelace_card.md](wewash_lovelace_card.md) file.
 
 ## Support
 
