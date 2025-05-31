@@ -48,8 +48,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_USERNAME): cv.string,
                     vol.Required(CONF_PASSWORD): cv.string,
-                }
-            ),
+                }            ),
             errors=errors,
         )
 
@@ -67,3 +66,5 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 async with session.post(AUTH_URL, json=data, headers=headers) as resp:
                     if resp.status != 200:
                         raise ValueError("Invalid authentication")
+        except Exception as e:
+            raise ValueError("Invalid authentication") from e
