@@ -46,3 +46,8 @@ htmlcov/
 
 # Others
 .DS_Store
+
+# Project specific
+prds/
+*.txt
+reverse_engineered_endpoints/
