@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 from datetime import datetime
+import time
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -25,6 +26,23 @@ from .const import (
     MODEL,
 )
 from .coordinator import WeWashDataUpdateCoordinator
+
+
+def format_timestamp(timestamp: Optional[int]) -> Optional[str]:
+    """Convert Unix timestamp (milliseconds) to human-readable format."""
+    if timestamp is None:
+        return None
+    return datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def get_remaining_minutes(timeout_timestamp: Optional[int]) -> Optional[int]:
+    """Calculate remaining minutes until timeout."""
+    if timeout_timestamp is None:
+        return None
+    current_time_ms = int(time.time() * 1000)
+    # Convert from milliseconds to minutes
+    remaining_time_minutes = int((timeout_timestamp - current_time_ms) / 60000)
+    return max(0, remaining_time_minutes)  # Ensure we don't return negative minutes
 
 
 def get_machine_status(data: dict[str, Any], appliance_short_name: str) -> str:
@@ -111,15 +129,27 @@ class WeWashWasherSensor(WeWashBaseSensor):
             attrs["is_enabled"] = room.get("serviceAvailability", {}).get("washing") == "ENABLED"
             attrs["price"] = room.get("washingCost", {}).get("costOnActive")
             attrs["currency"] = room.get("washingCost", {}).get("currencyCode")
-        
-        # Get reservation data
+          # Get reservation data
         reservation_data = get_machine_reservation_data(self.coordinator.data, "W1")
         if reservation_data:
             attrs["is_online"] = reservation_data.get("applianceOnline")
             attrs["reservation_id"] = reservation_data.get("reservationId")
             attrs["queue_position"] = reservation_data.get("queuePosition")
-            attrs["timestamp"] = reservation_data.get("statusChangedTimestamp")
-            attrs["timeout"] = reservation_data.get("timeoutTimestamp")
+            
+            # Format timestamps for better readability
+            status_changed_timestamp = reservation_data.get("statusChangedTimestamp")
+            timeout_timestamp = reservation_data.get("timeoutTimestamp")
+            
+            # Original raw values (for compatibility)
+            attrs["timestamp_raw"] = status_changed_timestamp
+            attrs["timeout_raw"] = timeout_timestamp
+            
+            # Human-readable values
+            attrs["timestamp"] = format_timestamp(status_changed_timestamp)
+            attrs["timeout"] = format_timestamp(timeout_timestamp)
+            
+            # Add remaining time in minutes until timeout
+            attrs["remaining_minutes"] = get_remaining_minutes(timeout_timestamp)
         
         return attrs
 
@@ -148,15 +178,27 @@ class WeWashDryerSensor(WeWashBaseSensor):
             attrs["is_enabled"] = room.get("serviceAvailability", {}).get("drying") == "ENABLED"
             attrs["price"] = room.get("dryingCost", {}).get("costOnActive")
             attrs["currency"] = room.get("dryingCost", {}).get("currencyCode")
-        
-        # Get reservation data
+          # Get reservation data
         reservation_data = get_machine_reservation_data(self.coordinator.data, "T1")
         if reservation_data:
             attrs["is_online"] = reservation_data.get("applianceOnline")
             attrs["reservation_id"] = reservation_data.get("reservationId")
             attrs["queue_position"] = reservation_data.get("queuePosition")
-            attrs["timestamp"] = reservation_data.get("statusChangedTimestamp")
-            attrs["timeout"] = reservation_data.get("timeoutTimestamp")
+            
+            # Format timestamps for better readability
+            status_changed_timestamp = reservation_data.get("statusChangedTimestamp")
+            timeout_timestamp = reservation_data.get("timeoutTimestamp")
+            
+            # Original raw values (for compatibility)
+            attrs["timestamp_raw"] = status_changed_timestamp
+            attrs["timeout_raw"] = timeout_timestamp
+            
+            # Human-readable values
+            attrs["timestamp"] = format_timestamp(status_changed_timestamp)
+            attrs["timeout"] = format_timestamp(timeout_timestamp)
+            
+            # Add remaining time in minutes until timeout
+            attrs["remaining_minutes"] = get_remaining_minutes(timeout_timestamp)
         
         return attrs
 

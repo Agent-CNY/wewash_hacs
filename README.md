@@ -19,6 +19,8 @@ This is a Home Assistant custom component for We-Wash laundry systems. It allows
 - View upcoming invoice amounts and due dates
 - Track washing and drying cycle counts
 - Enhanced machine status display with running time
+- User-friendly timestamp formatting for reservation start and end times
+- Remaining time display in minutes for active reservations
 - Comprehensive laundry room information
 - Automatic updates every 5 minutes
 

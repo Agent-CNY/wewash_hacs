@@ -12,8 +12,11 @@
 | currency | Currency for price | laundry-rooms.selectedLaundryRooms[0].washingCost.currencyCode |
 | reservation_id | ID of current reservation (if any) | From reservation where applianceShortName = "W1": items[x].reservationId |
 | queue_position | Position in queue (if any) | From reservation where applianceShortName = "W1": items[x].queuePosition |
-| timestamp | Timestamp of last status change | From reservation where applianceShortName = "W1": items[x].statusChangedTimestamp |
-| timeout | Timestamp when reservation times out | From reservation where applianceShortName = "W1": items[x].timeoutTimestamp |
+| timestamp | Human-readable time of last status change | Formatted from items[x].statusChangedTimestamp |
+| timestamp_raw | Raw Unix timestamp (ms) of last status change | From reservation where applianceShortName = "W1": items[x].statusChangedTimestamp |
+| timeout | Human-readable time when reservation will end | Formatted from items[x].timeoutTimestamp |
+| timeout_raw | Raw Unix timestamp (ms) when reservation times out | From reservation where applianceShortName = "W1": items[x].timeoutTimestamp |
+| remaining_minutes | Minutes remaining until the reservation ends | Calculated from current time and timeout timestamp |
 
 ## 2. Dryer Entity
 **Entity ID:** `dryer_t1`
@@ -27,8 +30,11 @@
 | currency | Currency for price | laundry-rooms.selectedLaundryRooms[0].dryingCost.currencyCode |
 | reservation_id | ID of current reservation (if any) | From reservation where applianceShortName = "T1": items[x].reservationId |
 | queue_position | Position in queue (if any) | From reservation where applianceShortName = "T1": items[x].queuePosition |
-| timestamp | Timestamp of last status change | From reservation where applianceShortName = "T1": items[x].statusChangedTimestamp |
-| timeout | Timestamp when reservation times out | From reservation where applianceShortName = "T1": items[x].timeoutTimestamp |
+| timestamp | Human-readable time of last status change | Formatted from items[x].statusChangedTimestamp |
+| timestamp_raw | Raw Unix timestamp (ms) of last status change | From reservation where applianceShortName = "T1": items[x].statusChangedTimestamp |
+| timeout | Human-readable time when reservation will end | Formatted from items[x].timeoutTimestamp |
+| timeout_raw | Raw Unix timestamp (ms) when reservation times out | From reservation where applianceShortName = "T1": items[x].timeoutTimestamp |
+| remaining_minutes | Minutes remaining until the reservation ends | Calculated from current time and timeout timestamp |
 
 ## 3. Laundry Room Entity
 **Entity ID:** `laundry_room`
