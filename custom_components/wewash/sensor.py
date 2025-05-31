@@ -50,13 +50,16 @@ def get_machine_status_with_time(data: dict[str, Any], machine_type: str, machin
     for item in data["reservations"]["items"]:
         if item["applianceType"] == machine_type and item["applianceShortName"] == machine_shortname:
             status = item["status"]
-            
-            # Calculate running time in minutes if active
+              # Calculate running time in minutes if active
             if status == "ACTIVE":
-                current_time_ms = int(time.time() * 1000)
-                elapsed_ms = current_time_ms - item["statusChangedTimestamp"]
-                elapsed_minutes = int(elapsed_ms / 60000)
-                return status, elapsed_minutes
+                if "statusChangedTimestamp" in item:
+                    current_time_ms = int(time.time() * 1000)
+                    elapsed_ms = current_time_ms - item["statusChangedTimestamp"]
+                    elapsed_minutes = int(elapsed_ms / 60000)
+                    return status, elapsed_minutes
+                else:
+                    # Return status without time if timestamp is missing
+                    return status, None
             return status, None
             
     # Check laundry room data for availability
@@ -109,8 +112,7 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             self._attr_unique_id += f"_{laundry_room_id}"
         if machine_type and machine_shortname:
             self._attr_unique_id += f"_{machine_type}_{machine_shortname}"
-            
-        # Set translation key if provided
+              # Set translation key if provided
         if description.translation_key:
             self._attr_translation_key = description.translation_key
 
@@ -118,7 +120,10 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             "identifiers": {(DOMAIN, coordinator.entry.entry_id)},
             "name": "We-Wash Laundry System",
             "manufacturer": MANUFACTURER,
-            "model": MODEL,        }    @property
+            "model": MODEL,
+        }
+
+    @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         if self.entity_description.value_fn is not None:

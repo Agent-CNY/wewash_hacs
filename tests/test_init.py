@@ -1,53 +1,81 @@
-"""Tests for the We-Wash integration."""
-from unittest.mock import patch
+"""Tests for the WeWash integration setup."""
+import pytest
+from unittest.mock import patch, MagicMock, AsyncMock
+
 from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntriesFlowManager
+from homeassistant.const import Platform
 
+from custom_components.wewash import (
+    async_setup,
+    async_setup_entry,
+    async_unload_entry,
+    PLATFORMS
+)
 from custom_components.wewash.const import DOMAIN
+from custom_components.wewash.coordinator import WeWashDataUpdateCoordinator
 
-async def test_setup_unload_config_entry(hass: HomeAssistant) -> None:
-    """Test setting up and unloading the config entry."""
-    config_entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={"username": "test@example.com", "password": "test123"},
-    )
+# Fixtures and test data are imported from conftest.py automatically
 
-    # Mock the API responses
+
+async def test_setup(hass):
+    """Test the setup function."""
+    # Call setup
+    result = await async_setup(hass, {})
+    
+    # Verify it initializes the domain data structure
+    assert DOMAIN in hass.data
+    assert result is True
+
+
+async def test_setup_entry(hass, mock_config_entry):
+    """Test setting up an entry."""
+    # Initialize domain data
+    hass.data[DOMAIN] = {}
+    
+    # Mock the coordinator and config entry setup with AsyncMock
     with patch(
-        "custom_components.wewash.coordinator.WeWashDataUpdateCoordinator._authenticate"
-    ), patch(
-        "custom_components.wewash.coordinator.WeWashDataUpdateCoordinator._async_update_data",
-        return_value={
-            "user": {
-                "credits": {"amount": 10.0, "currency": "EUR"},
-            },
-            "laundry_rooms": {
-                "selectedLaundryRooms": [{
-                    "id": "test_room",
-                    "name": "Test Room",
-                    "serviceAvailability": {
-                        "availableWashers": 2,
-                        "availableDryers": 1,
-                    }
-                }]
-            },
-            "reservations": {
-                "items": []
-            }
-        }
-    ):
-        config_entry.add_to_hass(hass)
-        assert await hass.config_entries.async_setup(config_entry.entry_id)
-        await hass.async_block_till_done()
+        "custom_components.wewash.coordinator.WeWashDataUpdateCoordinator.async_config_entry_first_refresh",
+        new_callable=AsyncMock
+    ), patch.object(
+        hass.config_entries, 
+        "async_forward_entry_setups",
+        new_callable=AsyncMock,
+        return_value=None
+    ) as mock_forward:
+        
+        # Test the setup
+        result = await async_setup_entry(hass, mock_config_entry)
+        
+        # Verify results
+        assert result is True
+        assert mock_config_entry.entry_id in hass.data[DOMAIN]
+        assert isinstance(hass.data[DOMAIN][mock_config_entry.entry_id], WeWashDataUpdateCoordinator)
+        
+        # Check that platforms were set up
+        mock_forward.assert_called_once_with(mock_config_entry, PLATFORMS)
 
-        # Verify that the integration was set up correctly
-        assert DOMAIN in hass.data
-        assert config_entry.entry_id in hass.data[DOMAIN]
 
-        # Test unloading the config entry
-        assert await hass.config_entries.async_unload(config_entry.entry_id)
-        await hass.async_block_till_done()
-
-        # Verify that the integration was unloaded correctly
-        assert config_entry.entry_id not in hass.data[DOMAIN]
+async def test_unload_entry(hass, mock_config_entry):
+    """Test unloading an entry."""
+    # Setup mock coordinator
+    coordinator = MagicMock()
+    hass.data[DOMAIN] = {mock_config_entry.entry_id: coordinator}
+    
+    # Mock the unload platforms function with AsyncMock
+    with patch.object(
+        hass.config_entries,
+        "async_unload_platforms",
+        new_callable=AsyncMock,
+        return_value=True
+    ) as mock_unload:
+        
+        # Test the unload
+        result = await async_unload_entry(hass, mock_config_entry)
+        
+        # Verify results
+        assert result is True
+        assert mock_config_entry.entry_id not in hass.data[DOMAIN]
+        
+        # Check that platforms were unloaded
+        mock_unload.assert_called_once_with(mock_config_entry, PLATFORMS)

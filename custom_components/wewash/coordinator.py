@@ -46,24 +46,37 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
                     await self._authenticate()
 
                 data = {}
-                async with aiohttp.ClientSession() as session:
-                    # Fetch user data
+                async with aiohttp.ClientSession() as session:                    # Fetch user data
                     headers = self._get_headers()
                     async with session.get(USER_URL, headers=headers) as resp:
                         if resp.status == 401:
                             await self._authenticate()
                             headers = self._get_headers()
-                            resp = await session.get(USER_URL, headers=headers)
-                        data["user"] = await resp.json()
-
+                            async with session.get(USER_URL, headers=headers) as resp:
+                                if resp.status >= 400:
+                                    raise UpdateFailed(f"API error {resp.status} from user endpoint")
+                                data["user"] = await resp.json()
+                        else:
+                            if resp.status >= 400:
+                                raise UpdateFailed(f"API error {resp.status} from user endpoint")
+                            data["user"] = await resp.json()
+                    
                     # Fetch laundry rooms
                     async with session.get(LAUNDRY_ROOMS_URL, headers=headers) as resp:
-                        data["laundry_rooms"] = await resp.json()                    # Fetch reservations
+                        if resp.status >= 400:
+                            raise UpdateFailed(f"API error {resp.status} from laundry rooms endpoint")
+                        data["laundry_rooms"] = await resp.json()
+                        
+                    # Fetch reservations
                     async with session.get(RESERVATIONS_URL, headers=headers) as resp:
+                        if resp.status >= 400:
+                            raise UpdateFailed(f"API error {resp.status} from reservations endpoint")
                         data["reservations"] = await resp.json()
                         
                     # Fetch upcoming invoices
                     async with session.get(UPCOMING_INVOICES_URL, headers=headers) as resp:
+                        if resp.status >= 400:
+                            raise UpdateFailed(f"API error {resp.status} from invoices endpoint")
                         data["invoices"] = await resp.json()
 
                 return data
@@ -72,6 +85,8 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Timeout communicating with API: {error}") from error
         except aiohttp.ClientError as error:
             raise UpdateFailed(f"Error communicating with API: {error}") from error
+        except (ValueError, KeyError) as error:
+            raise UpdateFailed(f"Error parsing API response: {error}") from error
             
     async def _authenticate(self):
         """Authenticate with the We-Wash API."""

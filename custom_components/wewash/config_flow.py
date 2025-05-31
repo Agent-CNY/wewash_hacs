@@ -48,23 +48,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_USERNAME): cv.string,
                     vol.Required(CONF_PASSWORD): cv.string,
-                }            ),
+                }
+            ),
             errors=errors,
         )
 
     async def _test_credentials(self, username: str, password: str) -> None:
         """Validate credentials."""
-        try:
-            async with aiohttp.ClientSession() as session:
-                data = {"username": username, "password": password}
-                headers = {
-                    "accept": "application/json",
-                    "content-type": "application/json",
-                    "ww-app-version": "2.68.0",
-                    "ww-client": "USERAPP",
-                }
-                async with session.post(AUTH_URL, json=data, headers=headers) as resp:
-                    if resp.status != 200:
-                        raise ValueError("Invalid authentication")
-        except Exception as e:
-            raise ValueError("Invalid authentication") from e
+        async with aiohttp.ClientSession() as session:
+            data = {"username": username, "password": password}
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "ww-app-version": "2.68.0",
+                "ww-client": "USERAPP",
+            }
+            async with session.post(AUTH_URL, json=data, headers=headers) as resp:
+                if resp.status != 200:
+                    raise ValueError("Invalid authentication")
