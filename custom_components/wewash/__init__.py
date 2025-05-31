@@ -10,6 +10,11 @@ from .coordinator import WeWashDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the We-Wash component."""
+    hass.data.setdefault(DOMAIN, {})
+    return True
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up We-Wash from a config entry."""
     coordinator = WeWashDataUpdateCoordinator(hass, entry)
