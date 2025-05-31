@@ -1,6 +1,13 @@
 # We-Wash Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/v/release/Agent-CNY/wewash_hacs?include_prereleases&style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/releases)
+[![GitHub license](https://img.shields.io/github/license/Agent-CNY/wewash_hacs?style=flat-square)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/issues)
+[![GitHub stars](https://img.shields.io/github/stars/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/stargazers)
+[![GitHub activity](https://img.shields.io/github/commit-activity/m/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
+[![Maintenance](https://img.shields.io/maintenance/yes/2025?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
 
 This is a Home Assistant custom component for We-Wash laundry systems. It allows you to monitor your laundry machines, reservations, and account balance directly in Home Assistant.
 
@@ -16,6 +23,8 @@ This is a Home Assistant custom component for We-Wash laundry systems. It allows
 - Automatic updates every 5 minutes
 
 ## Installation
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Agent-CNY&repository=wewash_hacs&category=integration)
 
 1. Install via HACS:
    - Add this repository as a custom repository in HACS
@@ -67,7 +76,7 @@ A sample Lovelace dashboard configuration is provided in the [wewash_lovelace_ca
 
 ## Support
 
-For issues and feature requests, please use the [GitHub issue tracker](https://github.com/philipp-cserny/wewash_hacs/issues).
+For issues and feature requests, please use the [GitHub issue tracker](https://github.com/Agent-CNY/wewash_hacs/issues).
 
 ## Disclaimer
 
