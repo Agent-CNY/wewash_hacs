@@ -118,10 +118,7 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             "identifiers": {(DOMAIN, coordinator.entry.entry_id)},
             "name": "We-Wash Laundry System",
             "manufacturer": MANUFACTURER,
-            "model": MODEL,
-        }
-
-    @property
+            "model": MODEL,        }    @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         if self.entity_description.value_fn is not None:
@@ -130,14 +127,15 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             # Add additional parameters based on what's available
             if self._laundry_room_id:
                 params.append(self._laundry_room_id)
-            if self._machine_type and self._machine_shortname:
+            elif self._machine_type and self._machine_shortname:
                 params.append(self._machine_type)
                 params.append(self._machine_shortname)
+            else:
+                # Always ensure we have at least a second parameter for functions that expect it
+                params.append(None)
                 
             return self.entity_description.value_fn(*params)
-        return None
-        
-    @property
+        return None    @property
     def extra_state_attributes(self):
         """Return additional state attributes."""
         if self.entity_description.attr_fn is not None:
@@ -146,9 +144,12 @@ class WeWashSensor(CoordinatorEntity, SensorEntity):
             # Add additional parameters based on what's available
             if self._laundry_room_id:
                 params.append(self._laundry_room_id)
-            if self._machine_type and self._machine_shortname:
+            elif self._machine_type and self._machine_shortname:
                 params.append(self._machine_type)
                 params.append(self._machine_shortname)
+            else:
+                # Always ensure we have at least a second parameter for functions that expect it
+                params.append(None)
                 
             return self.entity_description.attr_fn(*params)
         return None
@@ -160,9 +161,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up We-Wash sensors."""
     coordinator: WeWashDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-
+    
     # Legacy value functions (kept for backward compatibility)
-    def get_balance(data: dict[str, Any], _) -> float:
+    def get_balance(data: dict[str, Any], _=None) -> float:
         """Get user balance."""
         return data["user"]["credits"]["amount"]
 
@@ -216,13 +217,12 @@ async def async_setup_entry(
                 for item in data["reservations"]["items"]:
                     if str(item["reservationId"]) == reservation_id:
                         return f"{item['applianceType']} - {item['applianceShortName']}"
-                return None
-            # Otherwise, return info of the first reservation (legacy behavior)
+                return None            # Otherwise, return info of the first reservation (legacy behavior)
             elif data["reservations"]["items"]:
                 item = data["reservations"]["items"][0]
                 return f"{item['applianceType']} - {item['applianceShortName']}"
         return None
-
+        
     def get_reservation_timeout(data: dict[str, Any], reservation_id: str | None = None) -> str:
         """Get current reservation timeout."""
         if "items" in data.get("reservations", {}):
@@ -238,8 +238,8 @@ async def async_setup_entry(
                     if "timeoutTimestamp" in item:
                         return item["timeoutTimestamp"]
         return None
-
-    def get_upcoming_invoice_amount(data: dict[str, Any], _) -> float:
+        
+    def get_upcoming_invoice_amount(data: dict[str, Any], _=None) -> float:
         """Get upcoming invoice amount."""
         # The API directly provides the total amount in the response
         if "amount" in data.get("invoices", {}):

@@ -1,11 +1,12 @@
 {
   "domain": "wewash",
   "name": "We-Wash",
-  "codeowners": ["@philipp-cserny"],
+  "codeowners": ["@agent-cny"],
   "config_flow": true,
-  "documentation": "https://github.com/philipp-cserny/wewash_hacs",
+  "documentation": "https://github.com/agent-cny/wewash_hacs",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/philipp-cserny/wewash_hacs/issues",
-  "version": "1.0.0",
-  "requirements": ["aiohttp>=3.8.0"]
+  "issue_tracker": "https://github.com/agent-cny/wewash_hacs/issues",
+  "version": "1.4.0",
+  "requirements": ["aiohttp>=3.8.0"],
+  "icon": "icons/logo.png"
 }
