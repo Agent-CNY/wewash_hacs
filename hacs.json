@@ -1,0 +1,7 @@
+{
+    "name": "We-Wash",
+    "render_readme": true,
+    "domains": ["wewash"],
+    "homeassistant": "2023.8.0",
+    "iot_class": "Cloud Polling"
+}

@@ -1,0 +1,32 @@
+Request:
+
+fetch("https://backend.we-wash.com/auth", {
+  "headers": {
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "de-DE,de;q=0.7",
+    "content-type": "application/json",
+    "priority": "u=1, i",
+    "sec-ch-ua": "\"Brave\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-site",
+    "sec-gpc": "1",
+    "ww-app-version": "2.68.0",
+    "ww-client": "USERAPP",
+    "cookie": "AWSALB=dQq8tKD+LW9JN+5M9Rj5nrZ1/ZjUvuxHbvM9bMqKOBNLwXWQa/9fw4IrIDFWhS0WoaSx79fmwakipXoh6wejiKGwDI+8gqWp80jDRqRdsBeOOOKLOcd25ZuIUQhC; AWSALBCORS=dQq8tKD+LW9JN+5M9Rj5nrZ1/ZjUvuxHbvM9bMqKOBNLwXWQa/9fw4IrIDFWhS0WoaSx79fmwakipXoh6wejiKGwDI+8gqWp80jDRqRdsBeOOOKLOcd25ZuIUQhC",
+    "Referer": "https://app.we-wash.com/",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  },
+  "body": "{\"username\":\"philipp.cserny@gmail.com\",\"password\":\"Badboy98!\"}",
+  "method": "POST"
+});
+
+Respone:
+NULL
+
+AWSALB	23LHk4OJZRRXv2uLZ0Ge/7tvLnbDijLeAKajCdFsglvKznZITRlLwjSJ8EA6lRdPMClJwJvQibVaedlRj2wWEAevIpnTG8qT47zVIEXPQ3pNFVX+dgvWSa+hgZft	backend.we-wash.com	/	Session	179						Medium
+AWSALBCORS	23LHk4OJZRRXv2uLZ0Ge/7tvLnbDijLeAKajCdFsglvKznZITRlLwjSJ8EA6lRdPMClJwJvQibVaedlRj2wWEAevIpnTG8qT47zVIEXPQ3pNFVX+dgvWSa+hgZft	backend.we-wash.com	/	Session	206		✓	None			Medium
+ww_access	eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwaGlsaXBwLmNzZXJueUBnbWFpbC5jb20iLCJyb2xlIjpbIlJPTEVfVVNFUiIsIkFQUF9VU0VSIl0sImV4cCI6MTc0ODY4NDI2NSwiaWF0IjoxNzQ4NjgzOTY1fQ.MVBbMWiDYi1xwQYl8sii6BMG7YMuGjBLcCbJFn3JniMRfdflgJtE08sWRlYyW9tCos5qPzQgyj5K_GRxdSqqHw	backend.we-wash.com	/	5 min	331	✓	✓				Medium
+ww_refresh	8b4a2ddf-8af0-4af1-9bcf-6ba4dfe802f9	backend.we-wash.com	/	28 days	129	✓	✓				Medium
