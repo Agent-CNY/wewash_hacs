@@ -45,14 +45,14 @@ from .coordinator import WeWashDataUpdateCoordinator
 def get_machine_status_with_time(data: dict[str, Any], machine_type: str, machine_shortname: str) -> tuple[str, Optional[int]]:
     """Get machine status with running time if active."""
     if "items" not in data.get("reservations", {}):
-        return "UNKNOWN", None
+        return "AVAILABLE", None
         
     for item in data["reservations"]["items"]:
         if item["applianceType"] == machine_type and item["applianceShortName"] == machine_shortname:
             status = item["status"]
-              # Calculate running time in minutes if active
+            # Calculate running time in minutes if active
             if status == "ACTIVE":
-                if "statusChangedTimestamp" in item:
+                if "statusChangedTimestamp" in item and item["statusChangedTimestamp"]:
                     current_time_ms = int(time.time() * 1000)
                     elapsed_ms = current_time_ms - item["statusChangedTimestamp"]
                     elapsed_minutes = int(elapsed_ms / 60000)
@@ -60,16 +60,17 @@ def get_machine_status_with_time(data: dict[str, Any], machine_type: str, machin
                 else:
                     # Return status without time if timestamp is missing
                     return status, None
+            # Return any other status found (including RESERVATION_TIMED_OUT, RESERVED, etc.)
             return status, None
             
-    # Check laundry room data for availability
+    # If machine not found in reservations, check laundry room data for availability
     for room in data.get("laundry_rooms", {}).get("selectedLaundryRooms", []):
         if machine_type == "WASHING_MACHINE" and room["serviceAvailability"]["availableWashers"] > 0:
             return "AVAILABLE", None
         elif machine_type == "DRYER" and room["serviceAvailability"]["availableDryers"] > 0:
             return "AVAILABLE", None
             
-    return "UNKNOWN", None
+    return "AVAILABLE", None
 
 def format_timestamp_to_datetime(timestamp_ms: int) -> datetime:
     """Convert millisecond timestamp to datetime."""
@@ -337,12 +338,10 @@ async def async_setup_entry(
                     icon=ICON_LAUNDRY_ROOM,
                 ),
             )
-        )
-    
-    # 5. Add enhanced machine status sensors for each machine type found in reservations
+        )    # 5. Add enhanced machine status sensors for each machine type found in reservations
     machine_types = {}  # Dictionary to track unique machines
     
-    # First get all machine types from reservations
+    # Get all machine types from reservations (including all statuses, not just active)
     if "items" in coordinator.data.get("reservations", {}):
         for reservation in coordinator.data["reservations"]["items"]:
             machine_key = f"{reservation['applianceType']}_{reservation['applianceShortName']}"
@@ -351,7 +350,10 @@ async def async_setup_entry(
                     "type": reservation["applianceType"],
                     "shortname": reservation["applianceShortName"],
                 }
-                
+    
+    # Only add machines if we found them in reservations data
+    # Don't create generic W1, W2, etc. unless we have evidence they exist
+    
     # Add dedicated sensor for each machine
     for machine in machine_types.values():
         machine_type = machine["type"]
@@ -363,7 +365,7 @@ async def async_setup_entry(
             WeWashMachineSensor(
                 coordinator,
                 WeWashSensorEntityDescription(
-                    key=f"{machine_type.lower()}_{shortname}",
+                    key=f"{machine_type.lower()}_{shortname.lower()}",
                     name=f"{friendly_type} {shortname}",
                     icon=icon,
                 ),
@@ -527,10 +529,12 @@ class WeWashMachineSensor(WeWashSensor):
         attrs = {}
         
         # Find the machine in the reservations data
+        machine_found = False
         for item in self.coordinator.data.get("reservations", {}).get("items", []):
             if (item["applianceType"] == self._machine_type and 
                 item["applianceShortName"] == self._machine_shortname):
                 
+                machine_found = True
                 attrs["online"] = item["applianceOnline"]
                 attrs["price"] = item["price"]
                 attrs["currency"] = item["currency"]
@@ -556,10 +560,26 @@ class WeWashMachineSensor(WeWashSensor):
                 if "laundryRoom" in item:
                     attrs["laundry_room"] = item["laundryRoom"]["name"]
                 
-                return attrs
+                break
                 
-        # If not found in reservations, check laundry room for availability
-        return {"available": True, "raw_status": "AVAILABLE"}
+        if not machine_found:
+            # If not found in reservations, check laundry room for availability info
+            attrs["available"] = True
+            attrs["raw_status"] = "AVAILABLE"
+            attrs["online"] = True  # Assume available machines are online
+            
+            # Add pricing from laundry room data
+            for room in self.coordinator.data.get("laundry_rooms", {}).get("selectedLaundryRooms", []):
+                if self._machine_type == "WASHING_MACHINE":
+                    attrs["price"] = room["washingCost"]["costOnActive"]
+                    attrs["currency"] = room["washingCost"]["currencyCode"]
+                elif self._machine_type == "DRYER":
+                    attrs["price"] = room["dryingCost"]["costOnActive"]
+                    attrs["currency"] = room["dryingCost"]["currencyCode"]
+                attrs["laundry_room"] = room["name"]
+                break
+                
+        return attrs
 
 class WeWashLaundryRoomSensor(WeWashSensor):
     """Representation of a WeWash laundry room availability sensor."""

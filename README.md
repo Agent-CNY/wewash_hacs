@@ -85,3 +85,32 @@ This integration is not affiliated with We-Wash GmbH. Use at your own risk.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Recent Improvements (May 2025)
+
+### Enhanced Data Updates
+- **Faster Updates**: Reduced update interval from 60 to 30 seconds for more responsive data
+- **Better Logging**: Added comprehensive debug logging to help diagnose update issues
+- **Improved Error Handling**: Enhanced error messages and timeout handling
+
+### Better Machine Detection
+- **All Machine Statuses**: Now shows machines in all states (Running, Available, Reservation Expired, etc.)
+- **Complete Machine Visibility**: Creates sensors for all machines found in reservation data
+- **Smart Status Mapping**: Better translation of technical statuses to user-friendly names
+
+### Resolved Common Issues
+- **Missing Machines**: Fixed issue where machines without active reservations wouldn't appear
+- **Data Population**: Improved entity population to ensure all available data is displayed
+- **Status Updates**: Better handling of machine status changes and timeouts
+
+### Troubleshooting Tips
+If you're experiencing issues:
+1. **Enable Debug Logging**: Add the following to your `configuration.yaml`:
+   ```yaml
+   logger:
+     logs:
+       custom_components.wewash: debug
+   ```
+2. **Check Entity States**: Look for entities like `sensor.washing_machine_w1` and `sensor.dryer_t1`
+3. **Monitor Updates**: The integration updates every 30 seconds - check the "Last Updated" timestamp
+4. **Restart Integration**: If entities are missing, try reloading the integration in Settings → Devices & Services

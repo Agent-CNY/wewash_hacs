@@ -10,8 +10,8 @@ RESERVATIONS_URL = "https://backend.we-wash.com/v3/users/me/reservations"
 UPCOMING_INVOICES_URL = "https://backend.we-wash.com/v3/users/me/upcoming-invoices"
 AUTH_REFRESH_URL = "https://backend.we-wash.com/auth/refresh"
 
-# Update interval (1 minute)
-UPDATE_INTERVAL = 60
+# Update interval (30 seconds for more responsive updates)
+UPDATE_INTERVAL = 30
 
 # Configuration
 CONF_USERNAME = "username"
@@ -44,5 +44,7 @@ STATUS_MAPPING = {
     "ACTIVE": "Running",
     "RESERVATION_TIMED_OUT": "Reservation Expired",
     "AVAILABLE": "Available",
-    "RESERVED": "Reserved"
+    "RESERVED": "Reserved",
+    "OFFLINE": "Offline",
+    "UNKNOWN": "Unknown"
 }

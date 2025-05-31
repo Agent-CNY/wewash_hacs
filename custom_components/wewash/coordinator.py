@@ -40,16 +40,21 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Fetch data from We-Wash API."""
+        _LOGGER.debug("Starting data update from We-Wash API")
         try:
             async with async_timeout.timeout(30):
                 if not self.access_token:
+                    _LOGGER.debug("No access token found, authenticating...")
                     await self._authenticate()
 
                 data = {}
-                async with aiohttp.ClientSession() as session:                    # Fetch user data
+                async with aiohttp.ClientSession() as session:
+                    # Fetch user data
                     headers = self._get_headers()
+                    _LOGGER.debug("Fetching user data...")
                     async with session.get(USER_URL, headers=headers) as resp:
                         if resp.status == 401:
+                            _LOGGER.debug("Access token expired, re-authenticating...")
                             await self._authenticate()
                             headers = self._get_headers()
                             async with session.get(USER_URL, headers=headers) as resp:
@@ -62,30 +67,48 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
                             data["user"] = await resp.json()
                     
                     # Fetch laundry rooms
+                    _LOGGER.debug("Fetching laundry rooms...")
                     async with session.get(LAUNDRY_ROOMS_URL, headers=headers) as resp:
                         if resp.status >= 400:
                             raise UpdateFailed(f"API error {resp.status} from laundry rooms endpoint")
                         data["laundry_rooms"] = await resp.json()
                         
                     # Fetch reservations
+                    _LOGGER.debug("Fetching reservations...")
                     async with session.get(RESERVATIONS_URL, headers=headers) as resp:
                         if resp.status >= 400:
                             raise UpdateFailed(f"API error {resp.status} from reservations endpoint")
                         data["reservations"] = await resp.json()
                         
                     # Fetch upcoming invoices
+                    _LOGGER.debug("Fetching upcoming invoices...")
                     async with session.get(UPCOMING_INVOICES_URL, headers=headers) as resp:
                         if resp.status >= 400:
                             raise UpdateFailed(f"API error {resp.status} from invoices endpoint")
                         data["invoices"] = await resp.json()
 
+                _LOGGER.debug("Successfully fetched all data from We-Wash API")
+                
+                # Log some key metrics for debugging
+                if "reservations" in data and "items" in data["reservations"]:
+                    _LOGGER.debug(f"Found {len(data['reservations']['items'])} reservations")
+                if "laundry_rooms" in data and "selectedLaundryRooms" in data["laundry_rooms"]:
+                    rooms = data["laundry_rooms"]["selectedLaundryRooms"]
+                    for room in rooms:
+                        washers = room["serviceAvailability"]["availableWashers"]
+                        dryers = room["serviceAvailability"]["availableDryers"]
+                        _LOGGER.debug(f"Room '{room['name']}': {washers} washers, {dryers} dryers available")
+
                 return data
 
         except asyncio.TimeoutError as error:
+            _LOGGER.error(f"Timeout communicating with API: {error}")
             raise UpdateFailed(f"Timeout communicating with API: {error}") from error
         except aiohttp.ClientError as error:
+            _LOGGER.error(f"Error communicating with API: {error}")
             raise UpdateFailed(f"Error communicating with API: {error}") from error
         except (ValueError, KeyError) as error:
+            _LOGGER.error(f"Error parsing API response: {error}")
             raise UpdateFailed(f"Error parsing API response: {error}") from error
             
     async def _authenticate(self):
