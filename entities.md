@@ -53,9 +53,17 @@
 ## 4. Next Invoice Entity
 **Entity ID:** `next_invoice`
 
-This doesn't appear directly in the data provided, but could potentially be created based on active reservations and their prices.
-
 | Attribute | Description | JSON Path |
 |-----------|-------------|-----------|
-| total_amount | Total of all active reservations | Calculated from sum of all active reservations' prices |
+| amount | Total amount of the next invoice | invoices.amount |
+| currency | Currency for the invoice | invoices.currency |
+| washing_cycles | Number of washing cycles | invoices.washingCycles |
+| drying_cycles | Number of drying cycles | invoices.dryingCycles |
+| total_reservations | Total number of reservations | Count of invoices.reservations |
+| washer_reservations | Number of washer reservations | Count of reservations with type="WASHING_MACHINE" |
+| dryer_reservations | Number of dryer reservations | Count of reservations with type="DRYER" |
+| due_date | Formatted due date for the invoice | Formatted from invoices.cumulativeInvoicingDate |
+| due_date_raw | Raw timestamp of the due date | invoices.cumulativeInvoicingDate |
+| days_until_due | Number of days until the invoice is due | Calculated from current time and due date |
+| payment_threshold | Payment threshold amount | invoices.selectedPaymentMethodThreshold |
 | currency | Currency code | From any reservation: items[x].currency |

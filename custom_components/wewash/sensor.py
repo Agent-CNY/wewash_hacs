@@ -256,25 +256,46 @@ class WeWashNextInvoiceSensor(WeWashBaseSensor):
 
     @property
     def native_value(self) -> StateType:
-        """Return the total amount of all active reservations."""
-        total_amount = 0.0
-        
-        reservations = self.coordinator.data.get("upcoming_invoices", {}).get("reservations", [])
-        for reservation in reservations:
-            if reservation.get("invoiceItemStatus") == "NEW":
-                total_amount += reservation.get("amount", 0.0)
-        
-        return total_amount
+        """Return the total amount of the next invoice."""
+        invoice_data = self.coordinator.data.get("invoices", {})
+        # Use the total amount directly from the invoice data
+        return invoice_data.get("amount", 0.0)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         attrs = {}
         
-        reservations = self.coordinator.data.get("upcoming_invoices", {}).get("reservations", [])
-        if reservations:
-            # Get currency from first reservation
-            attrs["currency"] = reservations[0].get("currency", "EUR")
+        invoice_data = self.coordinator.data.get("invoices", {})
+        if invoice_data:
+            # Basic invoice information
+            attrs["currency"] = invoice_data.get("currency", "EUR")
+            attrs["washing_cycles"] = invoice_data.get("washingCycles", 0)
+            attrs["drying_cycles"] = invoice_data.get("dryingCycles", 0)
+            
+            # Calculate total number of reservations
+            reservations = invoice_data.get("reservations", [])
+            attrs["total_reservations"] = len(reservations)
+            
+            # Count washer and dryer reservations
+            washer_reservations = sum(1 for r in reservations if r.get("type") == "WASHING_MACHINE")
+            dryer_reservations = sum(1 for r in reservations if r.get("type") == "DRYER")
+            attrs["washer_reservations"] = washer_reservations
+            attrs["dryer_reservations"] = dryer_reservations
+            
+            # Format and calculate due date information
+            cumulative_invoicing_timestamp = invoice_data.get("cumulativeInvoicingDate")
+            if cumulative_invoicing_timestamp:
+                attrs["due_date_raw"] = cumulative_invoicing_timestamp
+                attrs["due_date"] = format_timestamp(cumulative_invoicing_timestamp)
+                
+                # Calculate the number of days until the due date
+                current_time_ms = int(time.time() * 1000)
+                days_until_due = max(0, int((cumulative_invoicing_timestamp - current_time_ms) / (1000 * 60 * 60 * 24)))
+                attrs["days_until_due"] = days_until_due
+            
+            # Add payment threshold information
+            attrs["payment_threshold"] = invoice_data.get("selectedPaymentMethodThreshold")
         
         return attrs
 
