@@ -111,34 +111,61 @@ async def async_setup_entry(
                 return room["dryingCost"]["costOnActive"]
         return 0.0
 
-    def get_reservation_status(data: dict[str, Any], _) -> str:
+    def get_reservation_status(data: dict[str, Any], reservation_id: str | None = None) -> str:
         """Get current reservation status."""
         if "items" in data.get("reservations", {}):
-            for item in data["reservations"]["items"]:
-                return item["status"]
+            # If a specific reservation ID is provided, get status for that reservation
+            if reservation_id:
+                for item in data["reservations"]["items"]:
+                    if str(item["reservationId"]) == reservation_id:
+                        return item["status"]
+                return "NOT_FOUND"
+            # Otherwise, return the status of the first reservation (legacy behavior)
+            elif data["reservations"]["items"]:
+                return data["reservations"]["items"][0]["status"]
         return "NO_RESERVATION"
-
-    def get_reservation_machine(data: dict[str, Any], _) -> str:
+        
+    def get_reservation_machine(data: dict[str, Any], reservation_id: str | None = None) -> str:
         """Get current reservation machine info."""
         if "items" in data.get("reservations", {}):
-            for item in data["reservations"]["items"]:
+            # If a specific reservation ID is provided, get machine info for that reservation
+            if reservation_id:
+                for item in data["reservations"]["items"]:
+                    if str(item["reservationId"]) == reservation_id:
+                        return f"{item['applianceType']} - {item['applianceShortName']}"
+                return None
+            # Otherwise, return info of the first reservation (legacy behavior)
+            elif data["reservations"]["items"]:
+                item = data["reservations"]["items"][0]
                 return f"{item['applianceType']} - {item['applianceShortName']}"
         return None
 
-    def get_reservation_timeout(data: dict[str, Any], _) -> str:
+    def get_reservation_timeout(data: dict[str, Any], reservation_id: str | None = None) -> str:
         """Get current reservation timeout."""
         if "items" in data.get("reservations", {}):
-            for item in data["reservations"]["items"]:
-                if "timeoutTimestamp" in item:
-                    return item["timeoutTimestamp"]
+            # If a specific reservation ID is provided, get timeout for that reservation
+            if reservation_id:
+                for item in data["reservations"]["items"]:
+                    if str(item["reservationId"]) == reservation_id and "timeoutTimestamp" in item:
+                        return item["timeoutTimestamp"]
+                return None
+            # Otherwise, return timeout of the first reservation with a timeout (legacy behavior)
+            else:
+                for item in data["reservations"]["items"]:
+                    if "timeoutTimestamp" in item:
+                        return item["timeoutTimestamp"]
         return None
 
     def get_upcoming_invoice_amount(data: dict[str, Any], _) -> float:
         """Get upcoming invoice amount."""
-        if "items" in data.get("invoices", {}):
+        # The API directly provides the total amount in the response
+        if "amount" in data.get("invoices", {}):
+            return data["invoices"]["amount"]
+        # Fallback to calculating from individual reservation items if needed
+        elif "reservations" in data.get("invoices", {}):
             total = 0.0
-            for item in data["invoices"]["items"]:
-                total += item["price"]
+            for item in data["invoices"]["reservations"]:
+                total += item["amount"]
             return total
         return 0.0
 
@@ -208,9 +235,9 @@ async def async_setup_entry(
                 ),
                 room_id,
             ),
-        ])
-
-    # Add reservation sensors
+        ])    # Add reservation sensors - both legacy generic sensors and individual machine-specific sensors
+    
+    # Add legacy sensors for backward compatibility
     entities.extend([
         WeWashSensor(
             coordinator,
@@ -240,6 +267,40 @@ async def async_setup_entry(
                 value_fn=get_reservation_timeout,
             ),
         ),
+    ])
+    
+    # Add machine-specific sensors for each active reservation
+    if "items" in coordinator.data.get("reservations", {}):
+        for reservation in coordinator.data["reservations"]["items"]:
+            reservation_id = str(reservation["reservationId"])
+            appliance_type = reservation["applianceType"]
+            appliance_name = reservation["applianceShortName"]
+            
+            entities.extend([
+                WeWashSensor(
+                    coordinator,
+                    WeWashSensorEntityDescription(
+                        key=f"reservation_status_{reservation_id}",
+                        name=f"{appliance_type} {appliance_name} Status",
+                        icon=ICON_RESERVATION,
+                        value_fn=get_reservation_status,
+                    ),
+                    reservation_id,
+                ),
+                WeWashSensor(
+                    coordinator,
+                    WeWashSensorEntityDescription(
+                        key=f"reservation_timeout_{reservation_id}",
+                        name=f"{appliance_type} {appliance_name} Timeout",
+                        device_class=SensorDeviceClass.TIMESTAMP,                        icon=ICON_TIMER,
+                        value_fn=get_reservation_timeout,
+                    ),
+                    reservation_id,
+                ),
+            ])
+    
+    # Add the upcoming invoice sensor
+    entities.append(
         WeWashSensor(
             coordinator,
             WeWashSensorEntityDescription(
@@ -250,7 +311,7 @@ async def async_setup_entry(
                 icon=ICON_INVOICE,
                 value_fn=get_upcoming_invoice_amount,
             ),
-        ),
-    ])
+        )
+    )
 
     async_add_entities(entities)
