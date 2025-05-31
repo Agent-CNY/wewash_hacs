@@ -17,7 +17,8 @@ from .const import (
     USER_URL,
     LAUNDRY_ROOMS_URL,
     RESERVATIONS_URL,
-    INVOICE_URL,
+    UPCOMING_INVOICES_URL,
+    AUTH_REFRESH_URL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,14 +58,12 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
 
                     # Fetch laundry rooms
                     async with session.get(LAUNDRY_ROOMS_URL, headers=headers) as resp:
-                        data["laundry_rooms"] = await resp.json()
-
-                    # Fetch reservations
+                        data["laundry_rooms"] = await resp.json()                    # Fetch reservations
                     async with session.get(RESERVATIONS_URL, headers=headers) as resp:
                         data["reservations"] = await resp.json()
-
+                        
                     # Fetch upcoming invoices
-                    async with session.get(INVOICE_URL, headers=headers) as resp:
+                    async with session.get(UPCOMING_INVOICES_URL, headers=headers) as resp:
                         data["invoices"] = await resp.json()
 
                 return data
@@ -73,11 +72,32 @@ class WeWashDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Timeout communicating with API: {error}") from error
         except aiohttp.ClientError as error:
             raise UpdateFailed(f"Error communicating with API: {error}") from error
-
+            
     async def _authenticate(self):
         """Authenticate with the We-Wash API."""
         try:
             async with aiohttp.ClientSession() as session:
+                # If we have a refresh token, try to use it first
+                if self.refresh_token:
+                    try:
+                        headers = {
+                            "accept": "application/json",
+                            "ww-app-version": "2.68.0",
+                            "ww-client": "USERAPP",
+                            "cookie": f"ww_refresh={self.refresh_token}",
+                        }
+                        async with session.get(AUTH_REFRESH_URL, headers=headers) as resp:
+                            if resp.status == 200:
+                                # Extract tokens from cookies
+                                cookies = resp.cookies
+                                self.access_token = cookies.get("ww_access")
+                                self.refresh_token = cookies.get("ww_refresh")
+                                return
+                    except aiohttp.ClientError:
+                        # If refresh fails, fall back to full authentication
+                        pass
+                
+                # Full authentication with username/password
                 data = {
                     "username": self.entry.data["username"],
                     "password": self.entry.data["password"],

@@ -7,7 +7,8 @@ AUTH_URL = "https://backend.we-wash.com/auth"
 USER_URL = "https://backend.we-wash.com/v3/users/me"
 LAUNDRY_ROOMS_URL = "https://backend.we-wash.com/v3/users/me/laundry-rooms"
 RESERVATIONS_URL = "https://backend.we-wash.com/v3/users/me/reservations"
-INVOICE_URL = "https://backend.we-wash.com/v3/users/me/upcoming-invoices"
+UPCOMING_INVOICES_URL = "https://backend.we-wash.com/v3/users/me/upcoming-invoices"
+AUTH_REFRESH_URL = "https://backend.we-wash.com/auth/refresh"
 
 # Update interval (5 minutes)
 UPDATE_INTERVAL = 300
