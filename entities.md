@@ -60,9 +60,6 @@
 | payment_threshold | Payment threshold amount | invoices.selectedPaymentMethodThreshold |
 | usage_washing_cycles | Number of washing cycles | invoices.washingCycles |
 | usage_drying_cycles | Number of drying cycles | invoices.dryingCycles |
-| reservations_total | Total number of reservations | Count of invoices.reservations |
-| reservations_washer | Number of washer reservations | Count of reservations with type="WASHING_MACHINE" |
-| reservations_dryer | Number of dryer reservations | Count of reservations with type="DRYER" |
 | due_date | User-friendly formatted due date | Formatted from invoices.cumulativeInvoicingDate |
 | due_in_days | Number of days until the invoice is due | Calculated from current time and due date |
 | payment_status | Human-readable payment status | "Due today", "Due tomorrow", or "Due in X days" |

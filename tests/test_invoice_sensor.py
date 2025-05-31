@@ -109,15 +109,9 @@ def test_invoice_sensor_attributes(mock_coordinator):
       # Payment information
     assert attributes["currency"] == "EUR"
     assert attributes["payment_threshold"] == 20.0
-    
-    # Usage statistics
+      # Usage statistics
     assert attributes["usage_washing_cycles"] == 4
     assert attributes["usage_drying_cycles"] == 3
-    
-    # Reservation counts
-    assert attributes["reservations_total"] == 7
-    assert attributes["reservations_washer"] == 4
-    assert attributes["reservations_dryer"] == 3
     
     # Due date information
     assert "due_date" in attributes

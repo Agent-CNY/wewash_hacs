@@ -271,16 +271,9 @@ class WeWashNextInvoiceSensor(WeWashBaseSensor):
             # Payment information
             attrs["currency"] = invoice_data.get("currency", "EUR")
             attrs["payment_threshold"] = invoice_data.get("selectedPaymentMethodThreshold")
-            
-            # Usage statistics - group related attributes
+              # Usage statistics - group related attributes
             attrs["usage_washing_cycles"] = invoice_data.get("washingCycles", 0)
             attrs["usage_drying_cycles"] = invoice_data.get("dryingCycles", 0)
-            
-            # Reservations information - group related attributes
-            reservations = invoice_data.get("reservations", [])
-            attrs["reservations_total"] = len(reservations)
-            attrs["reservations_washer"] = sum(1 for r in reservations if r.get("type") == "WASHING_MACHINE")
-            attrs["reservations_dryer"] = sum(1 for r in reservations if r.get("type") == "DRYER")
             
             # Due date information - improve formatting and clarity
             cumulative_invoicing_timestamp = invoice_data.get("cumulativeInvoicingDate")

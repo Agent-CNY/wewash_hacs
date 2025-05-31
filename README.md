@@ -1,118 +1,165 @@
-# We-Wash Home Assistant Integration
+# We-Wash for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub release](https://img.shields.io/github/v/release/Agent-CNY/wewash_hacs?include_prereleases&style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/releases)
-[![GitHub license](https://img.shields.io/github/license/Agent-CNY/wewash_hacs?style=flat-square)](LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/issues)
-[![GitHub stars](https://img.shields.io/github/stars/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/stargazers)
-[![GitHub activity](https://img.shields.io/github/commit-activity/m/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
-[![Maintenance](https://img.shields.io/maintenance/yes/2025?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Agent-CNY/wewash_hacs?style=flat-square)](https://github.com/Agent-CNY/wewash_hacs/commits)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Agent-CNY/wewash_hacs/main/custom_components/wewash/icons/logo.png" alt="We-Wash Logo" width="200"/>
+</p>
 
-This is a Home Assistant custom component for We-Wash laundry systems. It allows you to monitor your laundry machines, reservations, and account balance directly in Home Assistant.
+<p align="center">
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
+  <a href="https://github.com/Agent-CNY/wewash_hacs/releases"><img src="https://img.shields.io/github/v/release/Agent-CNY/wewash_hacs?include_prereleases&style=flat-square" alt="Releases"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Agent-CNY/wewash_hacs?style=flat-square" alt="License"></a>
+  <a href="https://github.com/Agent-CNY/wewash_hacs/issues"><img src="https://img.shields.io/github/issues/Agent-CNY/wewash_hacs?style=flat-square" alt="Issues"></a>
+  <br>
+  <a href="https://github.com/Agent-CNY/wewash_hacs/stargazers"><img src="https://img.shields.io/github/stars/Agent-CNY/wewash_hacs?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/Agent-CNY/wewash_hacs/commits"><img src="https://img.shields.io/maintenance/yes/2025?style=flat-square" alt="Maintenance"></a>
+  <a href="https://github.com/Agent-CNY/wewash_hacs/commits"><img src="https://img.shields.io/github/last-commit/Agent-CNY/wewash_hacs?style=flat-square" alt="Last Commit"></a>
+</p>
 
-## Features
+Seamlessly integrate your We-Wash laundry system with Home Assistant. Monitor machine availability, track your usage, get notified when your laundry is ready, and stay on top of your upcoming invoices.
 
-- Monitor available washers and dryers in your laundry rooms
-- Track your We-Wash account balance
-- Get notifications when your reserved machines are ready
-- View upcoming invoice amounts and due dates
-- Track washing and drying cycle counts
-- Enhanced machine status display with running time
-- User-friendly timestamp formatting for reservation start and end times
-- Remaining time display in minutes for active reservations
-- Comprehensive laundry room information
-- Automatic updates every 5 minutes
+## ✨ Features
 
-## Installation
+- **Real-time Machine Status** - Know which washers and dryers are available, running, or reserved
+- **Smart Notifications** - Get alerts when your laundry is ready or when machines become available
+- **Financial Tracking** - Monitor your account balance and view upcoming invoices with payment due dates
+- **Usage Statistics** - Track your washing and drying cycle counts
+- **Enhanced Display**:
+  - User-friendly timestamps for reservations
+  - Remaining time indicators for active cycles
+  - Clear machine status with human-readable values
+- **Comprehensive Laundry Room Info** - View all details about your laundry facilities
+- **Automatic Updates** - Stay current with regular data refreshes
+
+## 📋 Quick Start Guide
+
+### Installation
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Agent-CNY&repository=wewash_hacs&category=integration)
 
-1. Install via HACS:
+1. **HACS Installation:**
    - Add this repository as a custom repository in HACS
    - Select "Integration" as the category
    - Click "Download"
 
-2. Restart Home Assistant
+2. **Restart Home Assistant**
 
-3. Add the integration:
-   - Go to Settings -> Devices & Services
-   - Click "Add Integration"
-   - Search for "We-Wash"
-   - Follow the configuration steps
+3. **Setup the Integration:**
+   - Go to Settings → Devices & Services
+   - Click "Add Integration" and search for "We-Wash"
+   - Enter your We-Wash account credentials (email and password)
 
-## Configuration
+### Dashboard Example
 
-You'll need your We-Wash account credentials:
-- Username (email)
-- Password
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Agent-CNY/wewash_hacs/main/assets/dashboard_example.png" alt="Dashboard Example" width="600"/>
+</p>
 
-## Entities Created
+A sample Lovelace dashboard configuration is provided in [wewash_lovelace_card.md](wewash_lovelace_card.md).
 
-### Sensors
+## 🔍 Entities & Attributes
 
-#### Balance and Invoicing
-- Account balance (EUR)
-- Upcoming invoice amount (EUR)
-- Days until invoice due
-- Washing cycles this month
-- Drying cycles this month
+The integration creates several entities to give you comprehensive information about your We-Wash setup:
 
-#### Laundry Room Information
-- Laundry room status (shows available machines)
-- Available washers per laundry room
-- Available dryers per laundry room
-- Washing and drying costs per laundry room
+### 1. Machine Entities
 
-#### Machine Status (Enhanced)
-- Washing machine status with running time
-- Dryer status with running time
-- Machine online status and pricing
+**Washer and Dryer Sensors** show the current status along with detailed information:
 
-### Binary Sensors
-- Reservation status (indicates when your reserved machine is ready)
+- **Status**: available, running, reserved, offline
+- **Cost Information**: Price per cycle and currency
+- **Reservation Details**: ID and queue position (if applicable)
 
-## Dashboard
+### 2. Laundry Room Entity
 
-A sample Lovelace dashboard configuration is provided in the [wewash_lovelace_card.md](wewash_lovelace_card.md) file.
+Provides overall information about your laundry facility:
 
-## Support
+- Available machines count
+- Facility name and address
+- Any service notes or alerts
 
-For issues and feature requests, please use the [GitHub issue tracker](https://github.com/Agent-CNY/wewash_hacs/issues).
+### 3. Next Invoice Entity
 
-## Disclaimer
+Keeps track of your billing information:
 
-This integration is not affiliated with We-Wash GmbH. Use at your own risk.
+- Total amount due
+- Payment due date with status ("Due today", "Due tomorrow", "Due in X days")
+- Usage statistics (washing and drying cycles)
+- Payment threshold information
 
-## License
+## 🔧 Advanced Configuration
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Automation Examples
 
-## Recent Improvements (May 2025)
+**Get Notified When Your Laundry is Done:**
 
-### Enhanced Data Updates
-- **Faster Updates**: Reduced update interval from 60 to 30 seconds for more responsive data
-- **Better Logging**: Added comprehensive debug logging to help diagnose update issues
-- **Improved Error Handling**: Enhanced error messages and timeout handling
+```yaml
+automation:
+  - alias: "Laundry Machine Finished"
+    trigger:
+      - platform: state
+        entity_id: sensor.washing_machine_w1
+        from: "running"
+        to: "available"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Laundry Ready!"
+          message: "Your washing is complete. Time to move it to the dryer!"
+```
 
-### Better Machine Detection
-- **All Machine Statuses**: Now shows machines in all states (Running, Available, Reservation Expired, etc.)
-- **Complete Machine Visibility**: Creates sensors for all machines found in reservation data
-- **Smart Status Mapping**: Better translation of technical statuses to user-friendly names
+**Monitor Available Machines:**
 
-### Resolved Common Issues
-- **Missing Machines**: Fixed issue where machines without active reservations wouldn't appear
-- **Data Population**: Improved entity population to ensure all available data is displayed
-- **Status Updates**: Better handling of machine status changes and timeouts
+```yaml
+automation:
+  - alias: "Dryer Available Notification"
+    trigger:
+      - platform: state
+        entity_id: sensor.dryer_t1
+        to: "available"
+    condition:
+      - condition: state
+        entity_id: input_boolean.want_dryer_notification
+        state: "on"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Dryer Available"
+          message: "A dryer is now available in your laundry room!"
+```
 
-### Troubleshooting Tips
+## 🆕 Recent Updates (June 2025)
+
+- **Enhanced Timestamp Formatting**: All timestamps now display in user-friendly format
+- **Remaining Time Calculation**: Active reservations show minutes remaining until completion
+- **Improved Invoice Entity**: Better organization of payment information with human-readable status messages
+- **UI Optimizations**: Enhanced entity attributes for better dashboard display
+
+## 🔍 Troubleshooting
+
 If you're experiencing issues:
-1. **Enable Debug Logging**: Add the following to your `configuration.yaml`:
+
+1. **Enable Debug Logging**:
    ```yaml
    logger:
      logs:
        custom_components.wewash: debug
    ```
-2. **Check Entity States**: Look for entities like `sensor.washing_machine_w1` and `sensor.dryer_t1`
-3. **Monitor Updates**: The integration updates every 30 seconds - check the "Last Updated" timestamp
-4. **Restart Integration**: If entities are missing, try reloading the integration in Settings → Devices & Services
+
+2. **Data Refresh**: The integration updates every 5 minutes by default. You can manually refresh from the Devices & Services page.
+
+3. **Missing Entities?** Try restarting the integration or check your We-Wash account for any changes to your laundry room setup.
+
+4. **API Connection Issues**: Verify your We-Wash credentials and ensure you have an active internet connection.
+
+## 📝 Support and Contributions
+
+- **Issue Reporting**: [GitHub Issue Tracker](https://github.com/Agent-CNY/wewash_hacs/issues)
+- **Feature Requests**: Feel free to suggest enhancements through issues
+- **Pull Requests**: Contributions are welcome!
+
+## ⚠️ Disclaimer
+
+This integration is not affiliated with or endorsed by We-Wash GmbH. It's a community-developed project to enhance the We-Wash experience for Home Assistant users.
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

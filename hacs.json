@@ -3,5 +3,8 @@
     "render_readme": true,
     "domains": ["wewash"],
     "homeassistant": "2023.8.0",
-    "iot_class": "Cloud Polling"
+    "iot_class": "Cloud Polling",
+    "content_in_root": false,
+    "zip_release": false,
+    "filename": "custom_components/wewash/manifest.json"
 }
