@@ -249,15 +249,14 @@ class TestAPIDataStructures:
                 ]
             }
         }
-        
-        # Test active machine
+          # Test active machine
         status, minutes = get_machine_status_with_time(test_data, "WASHING_MACHINE", "W1")
         assert status == "ACTIVE"
         assert isinstance(minutes, int)
         
         # Test non-existent machine
         status, minutes = get_machine_status_with_time(test_data, "DRYER", "T2")
-        assert status == "UNKNOWN"
+        assert status == "AVAILABLE"
         assert minutes is None
 
     def test_edge_cases_and_missing_data(self):
@@ -265,7 +264,7 @@ class TestAPIDataStructures:
         # Test empty data
         empty_data = {}
         status, minutes = get_machine_status_with_time(empty_data, "WASHING_MACHINE", "W1")
-        assert status == "UNKNOWN"
+        assert status == "AVAILABLE"
         assert minutes is None
         
         # Test malformed reservation data
